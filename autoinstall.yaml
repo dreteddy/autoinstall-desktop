@@ -1,0 +1,87 @@
+#cloud-config
+autoinstall:
+  version: 1
+   snaps:
+    - name: firefox
+    - name: gnome-3-38-2004
+    - name: gtk-common-themes
+    - name: snap-store
+    - name: snapd-desktop-integration
+  identity:
+    hostname: workstation_ubuntu_24.04
+    username: tey1ch
+    password: "$y$j9T$fJ3drYOGwckBkjC8qQ7HJ.$nOXMXrPXJ/2rwgXH0RikuGO6XP3rTg8G2qCHIF.dsV5"
+  ssh:
+    install-server: true
+    allow-pw: true
+  storage:
+    layout:
+      name: lvm
+  packages:
+    - ubuntu-desktop
+    - docker.io
+    - docker-compose
+    - kubectl
+    - kubelet
+    - kubeadm
+    - terraform
+    - ansible
+    - git
+    - curl
+    - wget
+    - python3
+    - python3-pip
+    - openjdk-11-jdk
+    - maven
+    - gradle
+  late-commands:
+    - >-
+      curtin in-target --
+      sed -i /etc/default/grub -e
+      's/GRUB_CMDLINE_LINUX_DEFAULT=".*/GRUB_CMDLINE_LINUX_DEFAULT="quiet splash"/'
+    - curtin in-target -- update-grub
+
+    # Let NetworkManager handle network
+    - rm /target/etc/netplan/00-installer-config*yaml
+    - >-
+      printf "network:\n  version: 2\n  renderer: NetworkManager"
+      > /target/etc/netplan/01-network-manager-all.yaml
+
+    # Remove default filesystem and related tools not used with the suggested
+    # 'direct' storage layout.  These may yet be required if different
+    # partitioning schemes are used.
+    - >-
+      curtin in-target -- apt-get remove -y
+      btrfs-progs cryptsetup* lvm2 xfsprogs
+
+    # Remove other packages present by default in Ubuntu Server but not
+    # normally present in Ubuntu Desktop.
+    - >-
+      curtin in-target -- apt-get remove -y
+      ubuntu-server ubuntu-server-minimal
+      binutils byobu curl dmeventd finalrd gawk
+      kpartx mdadm ncurses-term needrestart open-iscsi openssh-server
+      sg3-utils ssh-import-id sssd thin-provisioning-tools vim tmux
+      sosreport screen open-vm-tools motd-news-config lxd-agent-loader
+      landscape-common htop git fonts-ubuntu-console ethtool
+
+    # Keep cloud-init, as it performs some of the installation on first boot.
+    - curtin in-target -- apt-get install -y cloud-init
+    - snap install --classic code
+    - snap install helm --classic
+    - snap install --classic kubectl
+    - mkdir -p /home/devops/.ssh
+    - echo "ssh-rsa AAAAB3Nza... user@hostname" > /home/devops/.ssh/authorized_keys
+    - chown -R devops:devops /home/devops/.ssh
+    - chmod 600 /home/devops/.ssh/authorized_keys
+    - systemctl enable docker
+    - systemctl start docker
+    - curl -fsSL https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
+    - add-apt-repository "deb https://apt.kubernetes.io/ kubernetes-xenial main"
+    - apt-get update
+    - apt-get install -y kubelet kubeadm kubectl
+    - apt-mark hold kubelet kubeadm kubectl
+  user-data:
+    disable_root: false
+  debconf-selections:
+    docker.io docker/start_on_boot boolean true
