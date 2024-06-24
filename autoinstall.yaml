@@ -8,9 +8,9 @@ autoinstall:
   - name: snap-store
   - name: snapd-desktop-integration
   identity:
-    hostname: workstation_ubuntu_24.04
+    hostname: devops-workstation
     username: tey1ch
-    password: 
+    password: '$6$7liDVczxynV7WOr5$g.QQ/QbiP7Vb2YiO/Vhp0QBViXWiexMKXBj/Q2C15nT2jwYaTCccT/vi0woz8g3DfOAv1eVca8t3aXAFdj56R/'
   ssh:
     install-server: true
     allow-pw: true
@@ -34,6 +34,8 @@ autoinstall:
     - openjdk-11-jdk
     - maven
     - gradle
+  early-commands:
+    - echo 'linux-generic-hwe-22.04' > /run/kernel-meta-package
   late-commands:
     - >-
       curtin in-target --
@@ -67,21 +69,4 @@ autoinstall:
 
     # Keep cloud-init, as it performs some of the installation on first boot.
     - curtin in-target -- apt-get install -y cloud-init
-    - snap install --classic code
-    - snap install helm --classic
-    - snap install --classic kubectl
-    - mkdir -p /home/devops/.ssh
-    - echo "ssh-rsa AAAAB3Nza... user@hostname" > /home/devops/.ssh/authorized_keys
-    - chown -R devops:devops /home/devops/.ssh
-    - chmod 600 /home/devops/.ssh/authorized_keys
-    - systemctl enable docker
-    - systemctl start docker
-    - curl -fsSL https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
-    - add-apt-repository "deb https://apt.kubernetes.io/ kubernetes-xenial main"
-    - apt-get update
-    - apt-get install -y kubelet kubeadm kubectl
-    - apt-mark hold kubelet kubeadm kubectl
-  user-data:
-    disable_root: false
-  debconf-selections:
-    docker.io docker/start_on_boot boolean true
+
