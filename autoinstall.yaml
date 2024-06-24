@@ -1,12 +1,12 @@
 #cloud-config
 autoinstall:
   version: 1
-   snaps:
-    - name: firefox
-    - name: gnome-3-38-2004
-    - name: gtk-common-themes
-    - name: snap-store
-    - name: snapd-desktop-integration
+  snaps:
+  - name: firefox
+  - name: gnome-3-38-2004
+  - name: gtk-common-themes
+  - name: snap-store
+  - name: snapd-desktop-integration
   identity:
     hostname: workstation_ubuntu_24.04
     username: tey1ch
