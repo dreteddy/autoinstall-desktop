@@ -10,7 +10,7 @@ autoinstall:
   identity:
     hostname: workstation_ubuntu_24.04
     username: tey1ch
-    password: "$y$j9T$fJ3drYOGwckBkjC8qQ7HJ.$nOXMXrPXJ/2rwgXH0RikuGO6XP3rTg8G2qCHIF.dsV5"
+    password: 
   ssh:
     install-server: true
     allow-pw: true
